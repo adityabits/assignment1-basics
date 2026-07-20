@@ -210,7 +210,7 @@ class Tokenizer:
         self.vocab = vocab
         self.inv_vocab = {v: k for k, v in vocab.items()}
         self.merges = merges 
-        self.special_tokens = special_tokens if special_tokens else []
+        self.special_tokens =  sorted(special_tokens, key=len, reverse=True) if special_tokens else []
 
     @classmethod
     def from_files(cls, vocab_filepath, merges_filepath, special_tokens=[]) -> None:
@@ -242,7 +242,6 @@ class Tokenizer:
                     # convert a str into tuple[bytes]
                     pt = tuple(bytes([b]) for b in match.group().encode('utf-8'))
                     pt_list.append(pt)
-
         # brute force: O(len(merges) X len(text))
         for pt in pt_list:
             # go through merges and iteratively merge pt
@@ -258,5 +257,6 @@ class Tokenizer:
             yield from self.encode(s)
 
     def decode(self, tokens: list[int]) -> str:
-        bytelist = [self.vocab[t] for t in tokens] # list[bytes]
-        return "".join([b.decode('utf-8', errors='ignore') for b in bytelist])
+        byte = b''.join([self.vocab[t] for t in tokens])
+        s = byte.decode("utf-8", errors="ignore")
+        return s
